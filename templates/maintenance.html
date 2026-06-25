@@ -1,1 +1,203 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOCKDOWN | {{ status }}</title>
+    <style>
+        :root {
+            --primary: #00ff66;
+            --warn: #ff3333;
+            --bg: #050505;
+            --scanline: rgba(18, 16, 16, 0.1);
+        }
 
+        body {
+            background-color: var(--bg);
+            color: var(--primary);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-transform: uppercase;
+        }
+
+        /* Hiệu ứng CRT Scanlines */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(var(--scanline) 50%, rgba(0, 0, 0, 0.2) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 10;
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .terminal {
+            width: 95%;
+            max-width: 1000px;
+            height: 80vh;
+            border: 2px solid var(--primary);
+            padding: 20px;
+            position: relative;
+            background: rgba(0, 20, 0, 0.9);
+            box-shadow: 0 0 20px rgba(0, 255, 102, 0.2);
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+
+        .main-display { display: flex; flex-direction: column; border-right: 1px solid var(--primary); padding-right: 20px; }
+
+        /* Glitch Effect */
+        .glitch {
+            font-size: 28px;
+            font-weight: bold;
+            position: relative;
+            text-shadow: 0.05em 0 0 rgba(255,0,0,.75), -0.025em -0.05em 0 rgba(0,255,0,.75), 0.025em 0.05em 0 rgba(0,0,255,.75);
+            animation: glitch 500ms infinite;
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 0.05em 0 0 rgba(255,0,0,.75), -0.025em -0.05em 0 rgba(0,255,0,.75), 0.025em 0.05em 0 rgba(0,0,255,.75); }
+            14% { text-shadow: 0.05em 0 0 rgba(255,0,0,.75), -0.025em -0.05em 0 rgba(0,255,0,.75), 0.025em 0.05em 0 rgba(0,0,255,.75); }
+            15% { text-shadow: -0.05em -0.025em 0 rgba(255,0,0,.75), 0.025em 0.025em 0 rgba(0,255,0,.75), -0.05em -0.05em 0 rgba(0,0,255,.75); }
+            49% { text-shadow: -0.05em -0.025em 0 rgba(255,0,0,.75), 0.025em 0.025em 0 rgba(0,255,0,.75), -0.05em -0.05em 0 rgba(0,0,255,.75); }
+            50% { text-shadow: 0.025em 0.05em 0 rgba(255,0,0,.75), 0.05em 0 0 rgba(0,255,0,.75), 0 -0.05em 0 rgba(0,0,255,.75); }
+            99% { text-shadow: 0.025em 0.05em 0 rgba(255,0,0,.75), 0.05em 0 0 rgba(0,255,0,.75), 0 -0.05em 0 rgba(0,0,255,.75); }
+            100% { text-shadow: -0.025em 0 0 rgba(255,0,0,.75), -0.025em -0.025em 0 rgba(0,255,0,.75), -0.025em -0.05em 0 rgba(0,0,255,.75); }
+        }
+
+        .countdown-box {
+            font-size: 40px;
+            color: var(--warn);
+            text-align: center;
+            margin: 20px 0;
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px dashed var(--warn);
+        }
+
+        .log-container {
+            flex-grow: 1;
+            font-size: 12px;
+            overflow: hidden;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border: 1px solid rgba(0, 255, 102, 0.2);
+        }
+
+        .status-tag {
+            background: var(--primary);
+            color: black;
+            padding: 2px 8px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .discord-sidebar { display: flex; flex-direction: column; gap: 10px; }
+        
+        .btn-action {
+            border: 1px solid var(--primary);
+            padding: 10px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--primary);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .btn-action:hover { background: var(--primary); color: black; }
+
+        @media (max-width: 800px) {
+            .terminal { grid-template-columns: 1fr; height: 95vh; overflow-y: auto; }
+            .discord-sidebar { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="terminal">
+        <div class="main-display">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>OS: GW-CORE-v2</span>
+                <span>ENC: AES-256-GCM</span>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <div class="glitch" data-text="SYSTEM LOCKDOWN">SYSTEM LOCKDOWN</div>
+                <p style="color: rgba(0,255,102,0.6);">Chỉ thị từ Trung ương: Tạm dừng toàn bộ chiến dịch quân sự để nâng cấp hạ tầng.</p>
+            </div>
+
+            <div class="countdown-box" id="timer">00:00:00:00</div>
+
+            <div class="log-container" id="log-screen">
+                <!-- Logs sẽ tự động chạy ở đây -->
+            </div>
+
+            <div style="margin-top: 15px;">
+                <span class="status-tag">CORE</span> <span>{{ version }}</span><br>
+                <span class="status-tag">DEV</span> <span>{{ dev }}</span>
+            </div>
+        </div>
+
+        <div class="discord-sidebar">
+            <div style="text-align: center; font-weight: bold; border-bottom: 1px solid var(--primary);">TRẠM RADIO DISCORD</div>
+            <iframe src="https://discord.com/widget?id=1493951797189152891&theme=dark" width="100%" height="400" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+            <a href="https://discord.gg/7H5d5JX856" target="_blank" class="btn-action">KẾT NỐI VÔ TUYẾN</a>
+            <div style="font-size: 10px; color: var(--warn); text-align: center; margin-top: auto;">
+                CẢNH BÁO: MỌI HÀNH VI TRUY CẬP TRÁI PHÉP SẼ BỊ TRUY QUÉT IP.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Hệ thống Log tự động
+        const logs = [
+            {% for log in logs %}"{{ log }}",{% endfor %}
+            "Connecting to Global Satellite Network...",
+            "Wiping temporary deployment caches...",
+            "Updating War-Room algorithms...",
+            "Database maintenance in progress...",
+            "Waiting for Render deployment confirmation..."
+        ];
+
+        const logScreen = document.getElementById('log-screen');
+        let logIndex = 0;
+
+        function addLog() {
+            const line = document.createElement('div');
+            line.innerHTML = `<span style="color: grey;">[${new Date().toLocaleTimeString()}]</span> > ${logs[logIndex % logs.length]}`;
+            logScreen.appendChild(line);
+            logScreen.scrollTop = logScreen.scrollHeight;
+            logIndex++;
+            setTimeout(addLog, Math.random() * 2000 + 500);
+        }
+        addLog();
+
+        // 2. Hệ thống đếm ngược (Countdown)
+        const targetDate = new Date("{{ eta }}").getTime();
+
+        setInterval(() => {
+            const now = new Date().getTime();
+            const diff = targetDate - now;
+
+            if (diff < 0) {
+                document.getElementById('timer').innerHTML = "READY FOR DEPLOY";
+                return;
+            }
+
+            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diff % (1000 * 60)) / 1000);
+            const ms = Math.floor((diff % 1000) / 10);
+
+            document.getElementById('timer').innerHTML = 
+                `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}:${ms.toString().padStart(2,'0')}`;
+        }, 41);
+    </script>
+</body>
+</html>
